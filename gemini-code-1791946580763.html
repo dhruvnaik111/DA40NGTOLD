@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USAF - IPT DA 40 NG TOLD & Weight and Balance Calculator</title>
+  <style>
+    :root {
+      --primary: #2b4c7e;
+      --primary-dark: #1e3557;
+      --accent: #e06666;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --border: #dce1e7;
+      --text: #181c1f;
+      --muted: #5a6570;
+      --highlight: #eef4fb;
+      --warn-bg: #fff3cd;
+      --warn-text: #856404;
+      --danger-bg: #f8d7da;
+      --danger-text: #721c24;
+      --ok-bg: #d4edda;
+      --ok-text: #155724;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 18px 24px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+
+    header .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 960px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      background-color: var(--primary);
+      color: #fff;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header.input-banner {
+      background-color: var(--accent);
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(43, 76, 126, 0.15);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: right;
+    }
+
+    th:first-child, td:first-child,
+    th:nth-child(2), td:nth-child(2) {
+      text-align: left;
+    }
+
+    thead th {
+      background-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    tr.highlight-row {
+      background-color: var(--highlight);
+      font-weight: 700;
+    }
+
+    .inline-input {
+      width: 90px;
+      padding: 4px 6px;
+      text-align: right;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .badge-ok { background: var(--ok-bg); color: var(--ok-text); }
+    .badge-warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger-text); }
+
+    .told-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .told-summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .told-box {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      background: var(--highlight);
+    }
+
+    .told-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .metric-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .metric-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+
+    .lookup-meta {
+      background: #f8f9fb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .footnote {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .btn-print {
+      background: #fff;
+      color: var(--primary-dark);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-print:hover {
+      background: #e9eef5;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>USAF - IPT DA 40 NG TOLD Card Calculator</h1>
+      <div class="subtitle">Weight &amp; Balance and AFM Takeoff &amp; Landing Distance Calculator</div>
+    </div>
+    <button class="btn-print" onclick="window.print()">Print TOLD Card</button>
+  </header>
+
+  <!-- USER INPUTS -->
+  <div class="card">
+    <div class="card-header input-banner">
+      <span>FLIGHT &amp; ENVIRONMENTAL INPUTS (YOU INPUT THESE)</span>
+      <span id="statusBadge" class="badge badge-ok">Within Limits</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="tailSelect">Aircraft Tail Number</label>
+          <select id="tailSelect"></select>
+        </div>
+        <div class="form-group">
+          <label for="flightDate">Date</label>
+          <input type="date" id="flightDate" />
+        </div>
+        <div class="form-group">
+          <label for="pilotWt">Pilot Weight (lbs)</label>
+          <input type="number" id="pilotWt" value="132" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="paxWt">Front Passenger (lbs)</label>
+          <input type="number" id="paxWt" value="175" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="rearWt">Stuff in Backseat (lbs)</label>
+          <input type="number" id="rearWt" value="10" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="bagWt">Stuff in Baggage (lbs)</label>
+          <input type="number" id="bagWt" value="0" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fieldElev">Field Elevation (ft MSL)</label>
+          <input type="number" id="fieldElev" value="0" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="altimeter">Altimeter Setting (inHg)</label>
+          <input type="number" id="altimeter" value="29.92" step="0.01" min="25.00" max="32.00" />
+        </div>
+        <div class="form-group">
+          <label for="oatMode">OAT Mode / Temp (°C)</label>
+          <select id="oatMode">
+            <option value="CUSTOM">Custom OAT (°C) - Rounds Up</option>
+            <option value="ISA">ISA Standard Temp Column</option>
+          </select>
+        </div>
+        <div class="form-group" id="oatInputGroup">
+          <label for="oatTemp">Current OAT (°C)</label>
+          <input type="number" id="oatTemp" value="20" step="1" min="-20" max="50" />
+        </div>
+        <div class="form-group">
+          <label for="flapSelect">Landing Flap Setting</label>
+          <select id="flapSelect">
+            <option value="LDG">Flaps Landing (LDG)</option>
+            <option value="ABNORMAL">Flaps Abnormal (T/O or UP)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- WEIGHT AND BALANCE TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <span>Weight and Balance Sheet</span>
+        <span style="font-size:0.8rem; font-weight:400;">Max Gross: 2,888 lbs (1,310 kg)</span>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Item</th>
+              <th>Weight (lbs)</th>
+              <th>Arm (in)</th>
+              <th>Moment (lbs&times;in)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Basic Empty Wt.</td>
+              <td id="wb_bew_wt">0.0</td>
+              <td id="wb_bew_arm">0.0</td>
+              <td id="wb_bew_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Pilot / Front Pax</td>
+              <td id="wb_front_wt">0.0</td>
+              <td>90.6</td>
+              <td id="wb_front_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Rear Seat</td>
+              <td id="wb_rear_wt">0.0</td>
+              <td>128.0</td>
+              <td id="wb_rear_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>Baggage</td>
+              <td id="wb_bag_wt">0.0</td>
+              <td>143.7</td>
+              <td id="wb_bag_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Fuel (6.7 lbs/gal)</td>
+              <td><input type="number" id="fuelWt" class="inline-input" value="160.8" step="0.1" /></td>
+              <td>103.5</td>
+              <td id="wb_fuel_mom">0.0</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>6</td>
+              <td>Ramp Wt.</td>
+              <td id="wb_ramp_wt">0.0</td>
+              <td id="wb_ramp_arm">0.0</td>
+              <td id="wb_ramp_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>Start / Taxi / Run-up</td>
+              <td><input type="number" id="taxiWt" class="inline-input" value="-6.7" step="0.1" /></td>
+              <td>103.5</td>
+              <td id="wb_taxi_mom">0.0</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>8</td>
+              <td>Takeoff Wt.</td>
+              <td id="wb_to_wt">0.0</td>
+              <td id="wb_to_arm">0.0</td>
+              <td id="wb_to_mom">0.0</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>Est. Fuel Burn</td>
+              <td><input type="number" id="burnWt" class="inline-input" value="-88.44" step="0.1" /></td>
+              <td>103.5</td>
+              <td id="wb_burn_mom">0.0</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>10</td>
+              <td>Landing Wt.</td>
+              <td id="wb_ldg_wt">0.0</td>
+              <td id="wb_ldg_arm">0.0</td>
+              <td id="wb_ldg_mom">0.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOLD PERFORMANCE RESULTS -->
+    <div class="card">
+      <div class="card-header">
+        <span>Takeoff &amp; Landing Distance (DA 40 NG AFM)</span>
+        <span style="font-size:0.8rem; font-weight:400;">Dry, Paved, Level Runway</span>
+      </div>
+      <div class="card-body">
+        <div class="lookup-meta">
+          <div><strong>Computed Pressure Altitude:</strong> <span id="exactPA">0</span> ft &rarr; <strong>Table Alt (Rounded Up):</strong> <span id="tablePA">SL (0 ft)</span></div>
+          <div><strong>OAT Table Column (Rounded Up):</strong> <span id="tableOAT">20°C / 68°F</span></div>
+          <div><strong>Takeoff Wt Table Bracket (Rounded Up):</strong> <span id="toBracket">2,645 lbs (1,200 kg)</span></div>
+          <div><strong>Landing Wt Table Bracket (Rounded Up):</strong> <span id="ldgBracket">2,645 lbs (1,200 kg)</span></div>
+        </div>
+
+        <div class="told-summary-grid">
+          <!-- TAKEOFF BOX -->
+          <div class="told-box">
+            <h3>
+              <span>TAKEOFF (Flaps T/O)</span>
+              <span style="font-size:0.78rem; font-weight:600; color:var(--primary);" id="toSpeeds">vR: 65 / v50: 70 KIAS</span>
+            </h3>
+            <div class="metric-row">
+              <span class="metric-label">Ground Roll</span>
+              <div>
+                <span class="metric-val" id="to_gr_ft">-- ft</span>
+                <span class="metric-sub" id="to_gr_m">(-- m)</span>
+              </div>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">50 ft (15 m) Obstacle</span>
+              <div>
+                <span class="metric-val" id="to_50_ft">-- ft</span>
+                <span class="metric-sub" id="to_50_m">(-- m)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- LANDING BOX -->
+          <div class="told-box">
+            <h3>
+              <span id="ldgTitle">LANDING (Flaps LDG)</span>
+              <span style="font-size:0.78rem; font-weight:600; color:var(--primary);" id="ldgSpeeds">vREF: 76 KIAS</span>
+            </h3>
+            <div class="metric-row">
+              <span class="metric-label">Ground Roll</span>
+              <div>
+                <span class="metric-val" id="ldg_gr_ft">-- ft</span>
+                <span class="metric-sub" id="ldg_gr_m">(-- m)</span>
+              </div>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">50 ft (15 m) Obstacle</span>
+              <div>
+                <span class="metric-val" id="ldg_50_ft">-- ft</span>
+                <span class="metric-sub" id="ldg_50_m">(-- m)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footnote">
+          * Per instructions and DA 40 NG AFM Doc. # 6.01.15-E Rev. 3: Pressure altitude, aircraft weight, and OAT are always rounded up to the next higher AFM table value. Distances in feet [ft] are calculated by dividing meters [m] by 0.3048 and rounding up to the nearest foot.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Aircraft Database from USAF - IPT DA 40 TOLD Card Calculator.xlsx
+  const AIRCRAFT_DB = [
+    { tail: "N251BL", bew: 2113.4, arm: 97.6, mom: 206265.0 },
+    { tail: "N582RG", bew: 2091.0, arm: 97.0, mom: 202722.5 },
+    { tail: "N237BL", bew: 2125.4, arm: 97.4, mom: 207055.3 },
+    { tail: "N241BL", bew: 2132.4, arm: 97.4, mom: 207757.9 },
+    { tail: "N261RG", bew: 2102.5, arm: 97.5, mom: 204930.7 },
+    { tail: "N322PS", bew: 2093.0, arm: 97.2, mom: 203481.5 },
+    { tail: "N327PS", bew: 2096.0, arm: 97.3, mom: 203961.8 },
+    { tail: "N335PS", bew: 2095.0, arm: 97.0, mom: 203298.8 },
+    { tail: "N514BL", bew: 2124.4, arm: 97.2, mom: 206403.0 },
+    { tail: "N523BL", bew: 2119.4, arm: 97.2, mom: 205914.8 },
+    { tail: "N566RG", bew: 2093.0, arm: 97.1, mom: 203125.7 },
+    { tail: "N567RG", bew: 2093.0, arm: 97.2, mom: 203418.7 },
+    { tail: "N580RG", bew: 2088.0, arm: 97.1, mom: 202828.3 },
+    { tail: "N685PS", bew: 2089.0, arm: 97.0, mom: 202528.6 },
+    { tail: "N702BL", bew: 2115.4, arm: 97.3, mom: 205866.4 },
+    { tail: "N905RG", bew: 2090.0, arm: 97.4, mom: 203586.9 }
+  ];
+
+  // 2. AFM Speeds Metadata
+  const SPEEDS = {
+    TO: {
+      2425: "vR: 61 / v50: 67 KIAS",
+      2645: "vR: 65 / v50: 70 KIAS",
+      2822: "vR: 67 / v50: 72 KIAS",
+      2888: "vR: 67 / v50: 72 KIAS"
+    },
+    LDG: {
+      2425: "vREF: 72 KIAS",
+      2645: "vREF: 76 KIAS",
+      2822: "vREF: 77 KIAS",
+      2888: "vREF: 77 KIAS"
+    },
+    ABNORMAL: {
+      2425: "vREF: 74 (T/O) / 78 (UP) KIAS",
+      2645: "vREF: 78 (T/O) / 82 (UP) KIAS",
+      2822: "vREF: 78 (T/O) / 83 (UP) KIAS",
+      2888: "vREF: 78 (T/O) / 83 (UP) KIAS"
+    }
+  };
+
+  // 3. Complete DA 40 NG AFM Performance Tables (Pages 5-13 to 5-16 & 5-30 to 5-37)
+  // Format:AFM_DATA[category][weight_lb][alt_ft] = { gr: [0C, 10C, 20C, 30C, 40C, 50C, ISA], obs: [0C, 10C, 20C, 30C, 40C, 50C, ISA] }
+  const AFM_DATA = {
+    TO: {
+      2888: {
+        0:     { gr: [365, 385, 410, 430, 460, 495, 397], obs: [550, 580, 610, 640, 680, 720, 590] },
+        1000:  { gr: [390, 410, 435, 465, 500, 535, 418], obs: [580, 610, 640, 680, 730, 770, 616] },
+        2000:  { gr: [415, 440, 465, 500, 540, 575, 439], obs: [610, 640, 680, 730, 780, 830, 646] },
+        3000:  { gr: [440, 470, 500, 540, 580, 625, 463], obs: [650, 680, 720, 780, 840, 890, 677] },
+        4000:  { gr: [470, 500, 540, 590, 630, 680, 490], obs: [690, 720, 780, 840, 900, 960, 708] },
+        5000:  { gr: [505, 535, 585, 640, 685, null, 519], obs: [730, 770, 840, 910, 970, null, 745] },
+        6000:  { gr: [540, 585, 640, 700, 750, null, 549], obs: [770, 830, 900, 980, 1040, null, 783] },
+        7000:  { gr: [580, 640, 700, 765, 820, null, 585], obs: [820, 900, 980, 1060, 1130, null, 828] },
+        8000:  { gr: [635, 700, 770, 845, 900, null, 628], obs: [890, 970, 1060, 1160, 1230, null, 881] },
+        9000:  { gr: [695, 770, 850, 915, 990, null, 674], obs: [970, 1060, 1160, 1250, 1330, null, 937] },
+        10000: { gr: [765, 850, 910, 995, null, null, 729], obs: [1050, 1160, 1240, 1340, null, null, 1000] }
+      },
+      2822: {
+        0:     { gr: [365, 385, 405, 425, 460, 490, 391], obs: [540, 570, 600, 630, 670, 710, 581] },
+        1000:  { gr: [385, 410, 430, 460, 495, 530, 413], obs: [580, 600, 630, 670, 720, 760, 609] },
+        2000:  { gr: [410, 435, 460, 495, 535, 570, 436], obs: [610, 640, 670, 720, 770, 820, 636] },
+        3000:  { gr: [435, 465, 495, 535, 580, 620, 460], obs: [640, 670, 710, 770, 820, 880, 668] },
+        4000:  { gr: [470, 495, 535, 585, 625, 675, 486], obs: [680, 720, 770, 830, 890, 950, 701] },
+        5000:  { gr: [500, 535, 580, 635, 680, null, 513], obs: [720, 760, 830, 890, 950, null, 735] },
+        6000:  { gr: [535, 580, 635, 695, 740, null, 544], obs: [760, 820, 890, 970, 1030, null, 772] },
+        7000:  { gr: [575, 635, 695, 760, 810, null, 581], obs: [810, 890, 970, 1050, 1120, null, 820] },
+        8000:  { gr: [630, 695, 765, 840, 895, null, 623], obs: [880, 960, 1050, 1150, 1220, null, 870] },
+        9000:  { gr: [690, 765, 845, 910, 980, null, 668], obs: [960, 1050, 1150, 1230, 1320, null, 927] },
+        10000: { gr: [765, 845, 905, 985, null, null, 723], obs: [1040, 1140, 1230, 1330, null, null, 992] }
+      },
+      2645: {
+        0:     { gr: [325, 345, 365, 385, 410, 440, 352], obs: [490, 520, 540, 570, 610, 640, 524] },
+        1000:  { gr: [345, 365, 390, 415, 445, 475, 371], obs: [520, 550, 570, 610, 650, 690, 548] },
+        2000:  { gr: [365, 390, 415, 445, 480, 515, 391], obs: [550, 580, 610, 650, 700, 740, 576] },
+        3000:  { gr: [390, 415, 445, 485, 520, 560, 413], obs: [580, 610, 650, 700, 750, 800, 602] },
+        4000:  { gr: [420, 445, 480, 525, 565, 610, 438], obs: [610, 640, 700, 750, 800, 860, 633] },
+        5000:  { gr: [450, 480, 525, 575, 615, null, 462], obs: [650, 690, 750, 810, 870, null, 666] },
+        6000:  { gr: [480, 525, 575, 630, 670, null, 491], obs: [690, 740, 810, 880, 940, null, 700] },
+        7000:  { gr: [520, 570, 630, 690, 735, null, 524], obs: [740, 800, 880, 960, 1010, null, 741] },
+        8000:  { gr: [570, 630, 695, 760, 810, null, 563], obs: [800, 870, 960, 1040, 1110, null, 789] },
+        9000:  { gr: [625, 695, 765, 830, 895, null, 606], obs: [870, 950, 1050, 1120, 1200, null, 839] },
+        10000: { gr: [690, 765, 825, 900, null, null, 656], obs: [950, 1040, 1110, 1210, null, null, 899] }
+      },
+      2425: {
+        0:     { gr: [280, 295, 310, 330, 355, 380, 303], obs: [430, 450, 470, 490, 530, 560, 457] },
+        1000:  { gr: [295, 315, 335, 355, 385, 410, 318], obs: [450, 470, 500, 530, 570, 600, 478] },
+        2000:  { gr: [315, 335, 355, 385, 415, 445, 336], obs: [480, 500, 530, 570, 600, 650, 498] },
+        3000:  { gr: [340, 360, 385, 415, 450, 480, 356], obs: [500, 530, 560, 610, 650, 690, 523] },
+        4000:  { gr: [360, 385, 415, 455, 490, 525, 377], obs: [530, 560, 600, 650, 700, 750, 549] },
+        5000:  { gr: [385, 415, 455, 495, 530, null, 399], obs: [560, 600, 650, 710, 750, null, 578] },
+        6000:  { gr: [415, 455, 495, 545, 580, null, 423], obs: [600, 650, 700, 770, 820, null, 608] },
+        7000:  { gr: [450, 495, 545, 600, 640, null, 452], obs: [640, 700, 770, 830, 890, null, 644] },
+        8000:  { gr: [490, 545, 605, 660, 705, null, 485], obs: [690, 760, 840, 910, 970, null, 684] },
+        9000:  { gr: [540, 600, 665, 725, 780, null, 523], obs: [760, 830, 910, 980, 1050, null, 730] },
+        10000: { gr: [600, 665, 715, 785, null, null, 567], obs: [830, 910, 970, 1060, null, null, 786] }
+      }
+    },
+    LDG: {
+      2888: {
+        0:     { gr: [305, 315, 325, 335, 355, 375, 318], obs: [620, 650, 670, 680, 720, 760, 650] },
+        1000:  { gr: [315, 325, 335, 350, 370, 395, 327], obs: [640, 660, 680, 700, 740, 790, 660] },
+        2000:  { gr: [325, 335, 350, 370, 390, 415, 336], obs: [650, 670, 690, 730, 770, 810, 670] },
+        3000:  { gr: [335, 350, 365, 385, 410, 435, 345], obs: [670, 690, 710, 750, 800, 840, 681] },
+        4000:  { gr: [350, 360, 380, 405, 430, 455, 356], obs: [680, 700, 740, 780, 830, 870, 692] },
+        5000:  { gr: [360, 375, 400, 425, 450, null, 366], obs: [700, 720, 770, 810, 860, null, 704] },
+        6000:  { gr: [375, 395, 420, 445, 475, null, 378], obs: [710, 750, 790, 840, 890, null, 717] },
+        7000:  { gr: [400, 430, 460, 485, 515, null, 404], obs: [750, 790, 840, 890, 940, null, 746] },
+        8000:  { gr: [455, 485, 520, 550, 585, null, 452], obs: [810, 870, 920, 970, 1020, null, 806] },
+        9000:  { gr: [520, 555, 585, 625, 660, null, 508], obs: [890, 950, 1000, 1060, 1120, null, 875] },
+        10000: { gr: [580, 620, 655, 695, null, null, 565], obs: [970, 1030, 1090, 1140, null, null, 936] }
+      },
+      2822: {
+        0:     { gr: [295, 305, 320, 330, 345, 365, 310], obs: [610, 630, 650, 670, 710, 750, 639] },
+        1000:  { gr: [305, 320, 330, 340, 365, 385, 320], obs: [630, 650, 670, 690, 730, 770, 647] },
+        2000:  { gr: [320, 330, 340, 360, 380, 405, 329], obs: [640, 660, 680, 720, 750, 800, 657] },
+        3000:  { gr: [330, 340, 355, 375, 400, 425, 338], obs: [650, 670, 700, 740, 780, 830, 667] },
+        4000:  { gr: [340, 355, 375, 395, 420, 445, 348], obs: [670, 690, 720, 770, 810, 860, 679] },
+        5000:  { gr: [355, 370, 390, 415, 440, null, 359], obs: [680, 710, 750, 800, 840, null, 690] },
+        6000:  { gr: [365, 385, 415, 440, 465, null, 370], obs: [700, 740, 780, 830, 870, null, 702] },
+        7000:  { gr: [395, 420, 450, 475, 505, null, 396], obs: [730, 780, 820, 870, 920, null, 732] },
+        8000:  { gr: [450, 480, 510, 540, 570, null, 445], obs: [800, 850, 900, 950, 1010, null, 792] },
+        9000:  { gr: [510, 545, 580, 615, 650, null, 501], obs: [880, 930, 990, 1040, 1100, null, 861] },
+        10000: { gr: [575, 610, 650, 685, null, null, 557], obs: [960, 1010, 1070, 1130, null, null, 925] }
+      },
+      2645: {
+        0:     { gr: [280, 290, 300, 310, 325, 345, 293], obs: [600, 620, 640, 660, 690, 730, 626] },
+        1000:  { gr: [290, 300, 310, 320, 340, 360, 301], obs: [610, 630, 650, 680, 720, 760, 633] },
+        2000:  { gr: [300, 310, 320, 340, 360, 380, 310], obs: [620, 640, 660, 700, 740, 780, 639] },
+        3000:  { gr: [310, 320, 335, 355, 375, 400, 319], obs: [630, 650, 680, 720, 760, 800, 649] },
+        4000:  { gr: [320, 335, 350, 375, 395, 420, 329], obs: [650, 670, 700, 740, 790, 830, 657] },
+        5000:  { gr: [335, 345, 370, 395, 415, null, 338], obs: [660, 690, 730, 770, 810, null, 668] },
+        6000:  { gr: [345, 365, 390, 415, 435, null, 348], obs: [680, 710, 750, 800, 840, null, 679] },
+        7000:  { gr: [370, 400, 425, 450, 475, null, 373], obs: [710, 750, 790, 840, 890, null, 707] },
+        8000:  { gr: [425, 455, 485, 515, 545, null, 423], obs: [780, 820, 870, 920, 980, null, 768] },
+        9000:  { gr: [490, 525, 555, 590, 620, null, 482], obs: [860, 910, 960, 1020, 1070, null, 839] },
+        10000: { gr: [560, 590, 630, 665, null, null, 540], obs: [930, 990, 1050, 1100, null, null, 905] }
+      },
+      2425: {
+        0:     { gr: [255, 265, 275, 285, 300, 320, 270], obs: [590, 610, 630, 640, 680, 720, 612] },
+        1000:  { gr: [265, 275, 285, 295, 315, 335, 278], obs: [590, 610, 630, 660, 690, 730, 615] },
+        2000:  { gr: [275, 285, 295, 310, 330, 350, 286], obs: [600, 620, 640, 670, 710, 750, 617] },
+        3000:  { gr: [285, 295, 310, 330, 345, 370, 294], obs: [610, 630, 650, 690, 730, 770, 623] },
+        4000:  { gr: [295, 305, 325, 345, 365, 385, 302], obs: [620, 640, 670, 710, 750, 800, 630] },
+        5000:  { gr: [305, 320, 340, 360, 385, null, 311], obs: [630, 650, 690, 730, 780, null, 637] },
+        6000:  { gr: [320, 335, 355, 380, 405, null, 321], obs: [640, 680, 720, 760, 800, null, 644] },
+        7000:  { gr: [345, 365, 390, 415, 440, null, 345], obs: [670, 710, 750, 800, 840, null, 671] },
+        8000:  { gr: [400, 425, 450, 480, 510, null, 394], obs: [740, 790, 840, 880, 930, null, 736] },
+        9000:  { gr: [465, 495, 525, 560, 590, null, 457], obs: [830, 880, 930, 980, 1030, null, 810] },
+        10000: { gr: [535, 565, 600, 635, null, null, 518], obs: [910, 960, 1010, 1070, null, null, 880] }
+      }
+    },
+    ABNORMAL: {
+      2888: {
+        0:     { gr: [355, 365, 380, 390, 415, 440, 372], obs: [790, 810, 840, 870, 920, 970, 822] },
+        1000:  { gr: [365, 380, 395, 420, 445, 475, 382], obs: [800, 820, 860, 910, 960, 1020, 827] },
+        2000:  { gr: [380, 400, 425, 450, 480, 510, 401], obs: [810, 850, 900, 950, 1010, 1060, 849] },
+        3000:  { gr: [400, 430, 455, 485, 515, 545, 425], obs: [840, 890, 940, 1000, 1060, 1120, 881] },
+        4000:  { gr: [430, 460, 490, 520, 550, 580, 450], obs: [880, 940, 990, 1060, 1120, 1180, 917] },
+        5000:  { gr: [460, 490, 525, 555, 590, null, 476], obs: [930, 990, 1050, 1110, 1170, null, 954] },
+        6000:  { gr: [495, 525, 560, 595, 630, null, 503], obs: [980, 1040, 1100, 1170, 1240, null, 992] },
+        7000:  { gr: [545, 580, 615, 655, 695, null, 547], obs: [1040, 1110, 1180, 1240, 1310, null, 1046] },
+        8000:  { gr: [620, 660, 705, 745, 790, null, 615], obs: [1150, 1220, 1290, 1370, 1440, null, 1141] },
+        9000:  { gr: [710, 755, 800, 850, 900, null, 696], obs: [1270, 1350, 1420, 1500, 1590, null, 1243] },
+        10000: { gr: [800, 850, 900, 955, null, null, 776], obs: [1380, 1460, 1550, 1630, null, null, 1340] }
+      },
+      2822: {
+        0:     { gr: [350, 360, 370, 385, 410, 430, 364], obs: [770, 790, 820, 850, 900, 950, 803] },
+        1000:  { gr: [360, 375, 390, 415, 440, 465, 374], obs: [780, 800, 840, 890, 940, 990, 808] },
+        2000:  { gr: [370, 390, 415, 445, 470, 500, 393], obs: [790, 830, 880, 930, 980, 1040, 829] },
+        3000:  { gr: [395, 420, 445, 475, 505, 535, 416], obs: [820, 870, 930, 980, 1040, 1090, 863] },
+        4000:  { gr: [420, 450, 480, 510, 540, 570, 441], obs: [860, 920, 970, 1030, 1090, 1150, 895] },
+        5000:  { gr: [450, 480, 515, 545, 580, null, 467], obs: [910, 970, 1020, 1080, 1150, null, 931] },
+        6000:  { gr: [485, 515, 550, 585, 620, null, 492], obs: [960, 1020, 1080, 1140, 1210, null, 972] },
+        7000:  { gr: [535, 570, 605, 645, 680, null, 537], obs: [1020, 1080, 1150, 1220, 1290, null, 1022] },
+        8000:  { gr: [610, 650, 690, 735, 780, null, 606], obs: [1130, 1200, 1270, 1340, 1410, null, 1117] },
+        9000:  { gr: [700, 745, 790, 835, 885, null, 685], obs: [1250, 1320, 1400, 1480, 1550, null, 1223] },
+        10000: { gr: [790, 840, 890, 940, null, null, 766], obs: [1360, 1440, 1520, 1610, null, null, 1319] }
+      },
+      2645: {
+        0:     { gr: [330, 340, 350, 365, 385, 410, 345], obs: [760, 780, 810, 840, 880, 930, 790] },
+        1000:  { gr: [340, 350, 370, 390, 415, 440, 354], obs: [760, 790, 820, 870, 920, 970, 790] },
+        2000:  { gr: [350, 370, 395, 420, 445, 470, 371], obs: [770, 810, 860, 910, 960, 1020, 811] },
+        3000:  { gr: [375, 400, 420, 450, 475, 505, 394], obs: [800, 850, 900, 950, 1010, 1060, 837] },
+        4000:  { gr: [400, 425, 455, 480, 510, 540, 416], obs: [840, 890, 940, 1000, 1060, 1110, 870] },
+        5000:  { gr: [425, 455, 485, 515, 545, null, 441], obs: [880, 930, 990, 1050, 1110, null, 901] },
+        6000:  { gr: [460, 490, 520, 550, 585, null, 466], obs: [920, 980, 1040, 1100, 1170, null, 937] },
+        7000:  { gr: [505, 540, 575, 610, 645, null, 508], obs: [980, 1040, 1110, 1170, 1240, null, 988] },
+        8000:  { gr: [580, 620, 660, 700, 740, null, 577], obs: [1090, 1160, 1230, 1300, 1370, null, 1083] },
+        9000:  { gr: [670, 715, 760, 805, 850, null, 660], obs: [1210, 1280, 1360, 1430, 1510, null, 1187] },
+        10000: { gr: [765, 815, 860, 910, null, null, 740], obs: [1330, 1400, 1490, 1560, null, null, 1289] }
+      },
+      2425: {
+        0:     { gr: [305, 315, 325, 335, 355, 380, 319], obs: [750, 770, 790, 820, 870, 920, 777] },
+        1000:  { gr: [315, 325, 340, 360, 385, 405, 328], obs: [750, 770, 800, 850, 900, 950, 780] },
+        2000:  { gr: [325, 345, 365, 390, 410, 435, 343], obs: [760, 780, 830, 880, 930, 980, 783] },
+        3000:  { gr: [345, 370, 390, 415, 440, 465, 364], obs: [760, 810, 860, 920, 970, 1020, 804] },
+        4000:  { gr: [370, 395, 420, 445, 470, 500, 386], obs: [800, 850, 900, 950, 1010, 1060, 829] },
+        5000:  { gr: [395, 420, 450, 475, 505, null, 408], obs: [840, 890, 940, 1000, 1050, null, 857] },
+        6000:  { gr: [425, 450, 480, 510, 540, null, 431], obs: [870, 930, 990, 1040, 1100, null, 887] },
+        7000:  { gr: [470, 500, 535, 565, 600, null, 471], obs: [930, 990, 1050, 1110, 1170, null, 936] },
+        8000:  { gr: [545, 580, 620, 655, 695, null, 542], obs: [1040, 1100, 1170, 1240, 1300, null, 1031] },
+        9000:  { gr: [640, 680, 720, 765, 805, null, 627], obs: [1170, 1230, 1310, 1380, 1450, null, 1141] },
+        10000: { gr: [735, 780, 825, 870, null, null, 712], obs: [1280, 1360, 1430, 1510, null, null, 1242] }
+      }
+    }
+  };
+
+  // Helper: Round up weight to AFM table bracket
+  function getWeightBracket(wt) {
+    if (wt <= 2425) return { lb: 2425, kg: 1100, overMax: false };
+    if (wt <= 2645) return { lb: 2645, kg: 1200, overMax: false };
+    if (wt <= 2822) return { lb: 2822, kg: 1280, overMax: false };
+    if (wt <= 2888) return { lb: 2888, kg: 1310, overMax: false };
+    return { lb: 2888, kg: 1310, overMax: true };
+  }
+
+  // Helper: Round up pressure altitude to next 1000 ft increment
+  function getTableAltitude(pa) {
+    if (pa <= 0) return { alt: 0, outOfRange: false };
+    const rounded = Math.ceil(pa / 1000) * 1000;
+    if (rounded > 10000) return { alt: 10000, outOfRange: true };
+    return { alt: rounded, outOfRange: false };
+  }
+
+  // Helper: Round up OAT to next 10C column (0, 10, 20, 30, 40, 50)
+  function getOatColumn(mode, oatVal) {
+    if (mode === "ISA") {
+      return { idx: 6, label: "ISA", outOfRange: false };
+    }
+    const labels = ["0°C / 32°F", "10°C / 50°F", "20°C / 68°F", "30°C / 86°F", "40°C / 104°F", "50°C / 122°F"];
+    if (oatVal <= 0) return { idx: 0, label: labels[0], outOfRange: false };
+    const roundedTen = Math.ceil(oatVal / 10) * 10;
+    if (roundedTen > 50) return { idx: 5, label: labels[5] + " (Exceeded)", outOfRange: true };
+    const idx = roundedTen / 10;
+    return { idx, label: labels[idx], outOfRange: false };
+  }
+
+  function fmt(num, dec = 1) {
+    return Number(num).toLocaleString("en-US", {
+      minimumFractionDigits: dec,
+      maximumFractionDigits: dec
+    });
+  }
+
+  function init() {
+    const tailSelect = document.getElementById("tailSelect");
+    AIRCRAFT_DB.forEach(ac => {
+      const opt = document.createElement("option");
+      opt.value = ac.tail;
+      opt.textContent = `${ac.tail} (BEW: ${ac.bew} lbs)`;
+      tailSelect.appendChild(opt);
+    });
+
+    document.getElementById("flightDate").valueAsDate = new Date();
+
+    const inputs = document.querySelectorAll("input, select");
+    inputs.forEach(el => el.addEventListener("input", calculateAll));
+
+    calculateAll();
+  }
+
+  function calculateAll() {
+    const tail = document.getElementById("tailSelect").value;
+    const ac = AIRCRAFT_DB.find(a => a.tail === tail) || AIRCRAFT_DB[0];
+
+    const oatMode = document.getElementById("oatMode").value;
+    document.getElementById("oatInputGroup").style.display = oatMode === "ISA" ? "none" : "flex";
+
+    // Weight & Balance Inputs
+    const pilot = parseFloat(document.getElementById("pilotWt").value) || 0;
+    const pax = parseFloat(document.getElementById("paxWt").value) || 0;
+    const rear = parseFloat(document.getElementById("rearWt").value) || 0;
+    const bag = parseFloat(document.getElementById("bagWt").value) || 0;
+    const fuel = parseFloat(document.getElementById("fuelWt").value) || 0;
+    const taxi = parseFloat(document.getElementById("taxiWt").value) || 0;
+    const burn = parseFloat(document.getElementById("burnWt").value) || 0;
+
+    // Moments
+    const frontWt = pilot + pax;
+    const frontMom = frontWt * 90.6;
+    const rearMom = rear * 128.0;
+    const bagMom = bag * 143.7;
+    const fuelMom = fuel * 103.5;
+
+    const rampWt = ac.bew + frontWt + rear + bag + fuel;
+    const rampMom = ac.mom + frontMom + rearMom + bagMom + fuelMom;
+    const rampArm = rampWt > 0 ? rampMom / rampWt : 0;
+
+    const taxiMom = taxi * 103.5;
+    const toWt = rampWt + taxi;
+    const toMom = rampMom + taxiMom;
+    const toArm = toWt > 0 ? toMom / toWt : 0;
+
+    const burnMom = burn * 103.5;
+    const ldgWt = toWt + burn;
+    const ldgMom = toMom + burnMom;
+    const ldgArm = ldgWt > 0 ? ldgMom / ldgWt : 0;
+
+    // Render W&B Table
+    document.getElementById("wb_bew_wt").textContent = fmt(ac.bew);
+    document.getElementById("wb_bew_arm").textContent = fmt(ac.arm);
+    document.getElementById("wb_bew_mom").textContent = fmt(ac.mom);
+
+    document.getElementById("wb_front_wt").textContent = fmt(frontWt);
+    document.getElementById("wb_front_mom").textContent = fmt(frontMom);
+
+    document.getElementById("wb_rear_wt").textContent = fmt(rear);
+    document.getElementById("wb_rear_mom").textContent = fmt(rearMom);
+
+    document.getElementById("wb_bag_wt").textContent = fmt(bag);
+    document.getElementById("wb_bag_mom").textContent = fmt(bagMom);
+
+    document.getElementById("wb_fuel_mom").textContent = fmt(fuelMom);
+
+    document.getElementById("wb_ramp_wt").textContent = fmt(rampWt);
+    document.getElementById("wb_ramp_arm").textContent = fmt(rampArm);
+    document.getElementById("wb_ramp_mom").textContent = fmt(rampMom);
+
+    document.getElementById("wb_taxi_mom").textContent = fmt(taxiMom);
+
+    document.getElementById("wb_to_wt").textContent = fmt(toWt);
+    document.getElementById("wb_to_arm").textContent = fmt(toArm);
+    document.getElementById("wb_to_mom").textContent = fmt(toMom);
+
+    document.getElementById("wb_burn_mom").textContent = fmt(burnMom);
+
+    document.getElementById("wb_ldg_wt").textContent = fmt(ldgWt);
+    document.getElementById("wb_ldg_arm").textContent = fmt(ldgArm);
+    document.getElementById("wb_ldg_mom").textContent = fmt(ldgMom);
+
+    // Pressure Altitude Calculation
+    const fieldElev = parseFloat(document.getElementById("fieldElev").value) || 0;
+    const altimeter = parseFloat(document.getElementById("altimeter").value) || 29.92;
+    const rawPA = (29.92 - altimeter) * 1000 + fieldElev;
+    const paInfo = getTableAltitude(rawPA);
+
+    // OAT Column Lookup
+    const oatTemp = parseFloat(document.getElementById("oatTemp").value) || 0;
+    const oatInfo = getOatColumn(oatMode, oatTemp);
+
+    // Weight Brackets (Always Round Up)
+    const toBracket = getWeightBracket(toWt);
+    const ldgBracket = getWeightBracket(ldgWt);
+
+    // Update Meta Display
+    document.getElementById("exactPA").textContent = Math.round(rawPA).toLocaleString();
+    document.getElementById("tablePA").textContent =
+      (paInfo.alt === 0 ? "SL (0 ft)" : `${paInfo.alt.toLocaleString()} ft`) +
+      (paInfo.outOfRange ? " [EXCEEDS 10,000 FT TABLE]" : "");
+    document.getElementById("tableOAT").textContent = oatInfo.label;
+    document.getElementById("toBracket").textContent =
+      `${toBracket.lb.toLocaleString()} lbs (${toBracket.kg} kg)` +
+      (toBracket.overMax ? " [OVER MAX GROSS!]" : "");
+    document.getElementById("ldgBracket").textContent =
+      `${ldgBracket.lb.toLocaleString()} lbs (${ldgBracket.kg} kg)` +
+      (ldgBracket.overMax ? " [OVER MAX GROSS!]" : "");
+
+    // Status Badge
+    const statusBadge = document.getElementById("statusBadge");
+    if (toBracket.overMax || ldgBracket.overMax) {
+      statusBadge.className = "badge badge-danger";
+      statusBadge.textContent = "OVER MAX GROSS WEIGHT (2,888 LBS)";
+    } else if (paInfo.outOfRange || oatInfo.outOfRange) {
+      statusBadge.className = "badge badge-warn";
+      statusBadge.textContent = "Outside AFM Table Limits";
+    } else {
+      statusBadge.className = "badge badge-ok";
+      statusBadge.textContent = "Within AFM Limits";
+    }
+
+    // Lookup Takeoff Distances
+    const toRow = AFM_DATA.TO[toBracket.lb][paInfo.alt];
+    const toGrM = toRow.gr[oatInfo.idx];
+    const to50M = toRow.obs[oatInfo.idx];
+
+    document.getElementById("toSpeeds").textContent = SPEEDS.TO[toBracket.lb];
+    renderDist("to_gr", toGrM);
+    renderDist("to_50", to50M);
+
+    // Lookup Landing Distances
+    const flapSetting = document.getElementById("flapSelect").value; // "LDG" or "ABNORMAL"
+    document.getElementById("ldgTitle").textContent =
+      flapSetting === "LDG" ? "LANDING (Flaps LDG)" : "LANDING (Flaps Abnormal)";
+    document.getElementById("ldgSpeeds").textContent = SPEEDS[flapSetting][ldgBracket.lb];
+
+    const ldgRow = AFM_DATA[flapSetting][ldgBracket.lb][paInfo.alt];
+    const ldgGrM = ldgRow.gr[oatInfo.idx];
+    const ldg50M = ldgRow.obs[oatInfo.idx];
+
+    renderDist("ldg_gr", ldgGrM);
+    renderDist("ldg_50", ldg50M);
+  }
+
+  function renderDist(prefix, meters) {
+    const ftEl = document.getElementById(`${prefix}_ft`);
+    const mEl = document.getElementById(`${prefix}_m`);
+    if (meters === null || meters === undefined) {
+      ftEl.textContent = "N/A (Chart Limit)";
+      mEl.textContent = "";
+    } else {
+      // AFM note: "For the distance in [ft] divide by 0.3048 or multiply by 3.28"
+      const feet = Math.ceil(meters / 0.3048);
+      ftEl.textContent = `${feet.toLocaleString()} ft`;
+      mEl.textContent = `(${meters.toLocaleString()} m)`;
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
