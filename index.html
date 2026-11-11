@@ -562,6 +562,9 @@
 </div>
 
 <script>
+  // Set this to the deployed Cloudflare Worker URL, without a trailing slash.
+  const WEATHER_PROXY_URL = "";
+
   // 1. Aircraft Database from USAF - IPT DA 40 TOLD Card Calculator.xlsx
   const AIRCRAFT_DB = [
     { tail: "N251BL", bew: 2113.4, arm: 97.6, mom: 206265.0 },
@@ -848,6 +851,12 @@
     const airportCode = airportInput.value.trim().toUpperCase();
 
     status.classList.remove("error");
+    if (!WEATHER_PROXY_URL) {
+      status.textContent = "Weather lookup is not configured. Set WEATHER_PROXY_URL after deploying the proxy.";
+      status.classList.add("error");
+      return;
+    }
+
     if (!/^[A-Z0-9]{3,4}$/.test(airportCode)) {
       status.textContent = "Enter a 3- or 4-character airport code.";
       status.classList.add("error");
@@ -863,10 +872,10 @@
     status.textContent = `Loading weather for ${airportCode}...`;
 
     try {
-      const query = `ids=${encodeURIComponent(airportCode)}&format=json`;
+      const query = `ids=${encodeURIComponent(airportCode)}`;
       const [airportResponse, metarResponse] = await Promise.all([
-        fetch(`https://aviationweather.gov/api/data/airport?${query}`, { signal: controller.signal }),
-        fetch(`https://aviationweather.gov/api/data/metar?${query}`, { signal: controller.signal })
+        fetch(`${WEATHER_PROXY_URL}/airport?${query}`, { signal: controller.signal }),
+        fetch(`${WEATHER_PROXY_URL}/metar?${query}`, { signal: controller.signal })
       ]);
 
       if (!airportResponse.ok || !metarResponse.ok) {
@@ -905,7 +914,9 @@
       status.textContent = `Loaded ${stationName}; METAR ${metar.rawOb || "updated"}.`;
     } catch (error) {
       if (error.name !== "AbortError") {
-        status.textContent = error.message || "Unable to load airport weather.";
+        status.textContent = error instanceof TypeError
+          ? "Could not reach the weather proxy. Check its URL and allowed Pages origin."
+          : error.message || "Unable to load airport weather.";
         status.classList.add("error");
       }
     } finally {
