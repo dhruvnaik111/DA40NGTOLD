@@ -140,6 +140,42 @@
       box-shadow: 0 0 0 2px rgba(43, 76, 126, 0.15);
     }
 
+    .airport-lookup-control {
+      display: flex;
+      gap: 6px;
+    }
+
+    .airport-lookup-control input {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .btn-lookup {
+      padding: 8px 10px;
+      border: none;
+      border-radius: 5px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-lookup:disabled {
+      cursor: wait;
+      opacity: 0.7;
+    }
+
+    .lookup-status {
+      min-height: 1em;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .lookup-status.error {
+      color: var(--danger-text);
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -324,6 +360,14 @@
         <div class="form-group">
           <label for="bagWt">Stuff in Baggage (lbs)</label>
           <input type="number" id="bagWt" value="0" step="0.1" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="airportCode">Airport Code</label>
+          <div class="airport-lookup-control">
+            <input type="text" id="airportCode" placeholder="e.g. KMCI" maxlength="4" autocomplete="off" aria-describedby="airportLookupStatus" />
+            <button type="button" class="btn-lookup" id="lookupAirport">Load</button>
+          </div>
+          <div class="lookup-status" id="airportLookupStatus" role="status" aria-live="polite"></div>
         </div>
         <div class="form-group">
           <label for="fieldElev">Field Elevation (ft MSL)</label>
@@ -771,6 +815,8 @@
     });
   }
 
+  let airportLookupController = null;
+
   function init() {
     const tailSelect = document.getElementById("tailSelect");
     AIRCRAFT_DB.forEach(ac => {
@@ -784,8 +830,90 @@
 
     const inputs = document.querySelectorAll("input, select");
     inputs.forEach(el => el.addEventListener("input", calculateAll));
+    document.getElementById("lookupAirport").addEventListener("click", lookupAirportWeather);
+    document.getElementById("airportCode").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        lookupAirportWeather();
+      }
+    });
 
     calculateAll();
+  }
+
+  async function lookupAirportWeather() {
+    const airportInput = document.getElementById("airportCode");
+    const lookupButton = document.getElementById("lookupAirport");
+    const status = document.getElementById("airportLookupStatus");
+    const airportCode = airportInput.value.trim().toUpperCase();
+
+    status.classList.remove("error");
+    if (!/^[A-Z0-9]{3,4}$/.test(airportCode)) {
+      status.textContent = "Enter a 3- or 4-character airport code.";
+      status.classList.add("error");
+      airportInput.focus();
+      return;
+    }
+
+    airportInput.value = airportCode;
+    if (airportLookupController) airportLookupController.abort();
+    const controller = new AbortController();
+    airportLookupController = controller;
+    lookupButton.disabled = true;
+    status.textContent = `Loading weather for ${airportCode}...`;
+
+    try {
+      const query = `ids=${encodeURIComponent(airportCode)}&format=json`;
+      const [airportResponse, metarResponse] = await Promise.all([
+        fetch(`https://aviationweather.gov/api/data/airport?${query}`, { signal: controller.signal }),
+        fetch(`https://aviationweather.gov/api/data/metar?${query}`, { signal: controller.signal })
+      ]);
+
+      if (!airportResponse.ok || !metarResponse.ok) {
+        const failedResponse = !airportResponse.ok ? airportResponse : metarResponse;
+        throw new Error(`Weather service returned HTTP ${failedResponse.status}.`);
+      }
+
+      const [airports, metars] = await Promise.all([
+        airportResponse.json(),
+        metarResponse.json()
+      ]);
+      const airport = Array.isArray(airports) ? airports[0] : null;
+      const metar = Array.isArray(metars) ? metars[0] : null;
+
+      if (!metar) throw new Error(`No current METAR found for ${airportCode}.`);
+
+      const airportElevation = airport ? Number(airport.elev) : NaN;
+      const stationElevation = Number(metar.elev);
+      const elevationMeters = Number.isFinite(airportElevation) ? airportElevation : stationElevation;
+      const altimeterHpa = Number(metar.altim);
+      const oatCelsius = Number(metar.temp);
+
+      if (!Number.isFinite(elevationMeters)) {
+        throw new Error(`Field elevation is unavailable for ${airportCode}.`);
+      }
+      if (!Number.isFinite(altimeterHpa) || !Number.isFinite(oatCelsius)) {
+        throw new Error(`The METAR for ${airportCode} is missing altimeter or temperature data.`);
+      }
+
+      document.getElementById("fieldElev").value = Math.round(elevationMeters * 3.28084);
+      document.getElementById("altimeter").value = (altimeterHpa / 33.8638866667).toFixed(2);
+      document.getElementById("oatTemp").value = oatCelsius;
+      calculateAll();
+
+      const stationName = metar.name || airportCode;
+      status.textContent = `Loaded ${stationName}; METAR ${metar.rawOb || "updated"}.`;
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        status.textContent = error.message || "Unable to load airport weather.";
+        status.classList.add("error");
+      }
+    } finally {
+      if (airportLookupController === controller) {
+        airportLookupController = null;
+        lookupButton.disabled = false;
+      }
+    }
   }
 
   function calculateAll() {
